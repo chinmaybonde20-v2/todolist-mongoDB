@@ -2,8 +2,8 @@
   <h1>Pagination</h1>
 </template>
 
-<script>
-export default {};
+<script setup>
+//
 </script>
 
 <style>

@@ -23,6 +23,7 @@
     "qrcode": "^1.5.3",
     "speakeasy": "^2.0.0",
     "vue": "^3.2.13",
+    "vue-good-table-next": "^0.2.1",
     "vue-router": "^4.0.3",
     "vuex": "^4.1.0"
   },

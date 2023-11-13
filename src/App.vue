@@ -1,31 +1,46 @@
 <template>
   <div class="app-container">
-    <GlobalHeader />
-    <router-view />
-    <GlobalFooter />
+    <GlobalSidebar />
+    <div class="content-container">
+      <router-view />
+    </div>
   </div>
+  <GlobalFooter />
 </template>
+
 <script setup>
-import GlobalHeader from "./components/GlobalHeader.vue";
 import GlobalFooter from "./components/GlobalFooter.vue";
+import GlobalSidebar from "./components/GlobalSidebar.vue";
 </script>
-<style>
+
+<style scoped>
 .app-container {
   display: flex;
-  flex-direction: column;
   min-height: 100vh;
 }
 
-Header {
+.content-container {
+  flex: 1;
+  padding: 20px;
+}
+
+.sidebar {
+  width: 15%;
+  min-width: 250px;
+  background-color: #333;
+  color: #fff;
+  padding: 20px;
+}
+
+.sidebar img {
+  max-width: 100%;
+}
+
+.header {
   background-color: #333;
   color: #fff;
   padding: 10px;
 }
 
-Footer {
-  background-color: #333;
-  color: #fff;
-  padding: 10px;
-  margin-top: auto; /* Push the footer to the bottom */
-}
+/* Add more styles as needed */
 </style>

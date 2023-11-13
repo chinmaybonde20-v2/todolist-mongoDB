@@ -14,18 +14,20 @@ app.use(express.json());
 app.use(cors());
 
 // DB connection
-mongoose.connect("mongodb://127.0.0.1:27017/todo-list", {
+mongoose.connect("mongodb://127.0.0.1:27017/employee-manager", {
   useNewUrlParser: true,
   useUnifiedTopology: true,
 });
 
 // Collection model
-const Todo = mongoose.model(
-  "todo-list",
+const Employee = mongoose.model(
+  "employees",
   new mongoose.Schema({
-    text: String,
-    description: String,
-    done: Boolean,
+    name: String,
+    email: String,
+    dob: String,
+    designation: String,
+    education: String,
   })
 );
 
@@ -70,57 +72,60 @@ const authenticateToken = (req, res, next) => {
 };
 
 // CRUD
-app.get("/todos", authenticateToken, async (req, res) => {
+app.get("/employees", authenticateToken, async (req, res) => {
   try {
-    const todos = await Todo.find();
-    res.json(todos);
+    const employees = await Employee.find();
+    res.json(employees);
   } catch (error) {
-    console.error("Error fetching todos:", error);
-    res.status(500).json({ error: "Failed to fetch todos" });
+    console.error("Error fetching employees :", error);
+    res.status(500).json({ error: "Failed to fetch employees " });
   }
 });
 
-app.post("/todos", authenticateToken, async (req, res) => {
+app.post("/employees", authenticateToken, async (req, res) => {
   try {
-    const newTodo = new Todo(req.body);
-    await newTodo.save();
-    res.json(newTodo);
+    const newEmployee = new Employee(req.body);
+    await newEmployee.save();
+    res.json(newEmployee);
   } catch (error) {
-    console.error("Error creating a new todo:", error);
-    res.status(500).json({ error: "Failed to create a new todo" });
+    console.error("Error creating a new employee:", error);
+    res.status(500).json({ error: "Failed to create a new employee" });
   }
 });
 
-app.put("/todos/:id", authenticateToken, async (req, res) => {
+app.put("/employees/:id", authenticateToken, async (req, res) => {
   try {
-    const todoId = req.params.id;
+    const employeeId = req.params.id;
     const updatedData = req.body;
-    const updatedTodo = await Todo.findByIdAndUpdate(todoId, updatedData, {
-      new: true,
-    });
-    if (updatedTodo) {
-      res.json(updatedTodo);
+    const updatedEmployee = await Employee.findByIdAndUpdate(
+      employeeId,
+      updatedData,
+      {
+        new: true,
+      }
+    );
+    if (updatedEmployee) {
+      res.json(updatedEmployee);
     } else {
-      res.status(404).json({ error: "Todo not found" });
+      res.status(404).json({ error: "Employee not found" });
     }
   } catch (error) {
-    console.error("Error updating a todo:", error);
-    res.status(500).json({ error: "Failed to update a todo" });
+    console.error("Error updating a employee:", error);
   }
 });
 
-app.delete("/todos/:id", authenticateToken, async (req, res) => {
+app.delete("/employees/:id", authenticateToken, async (req, res) => {
   try {
-    const todoId = req.params.id;
-    const result = await Todo.findByIdAndDelete(todoId);
+    const employeeId = req.params.id;
+    const result = await Employee.findByIdAndDelete(employeeId);
     if (result) {
-      res.json({ message: "Todo deleted successfully" });
+      res.json({ message: "Employee deleted successfully" });
     } else {
-      res.status(404).json({ error: "Todo not found" });
+      res.status(404).json({ error: "Employee not found" });
     }
   } catch (error) {
-    console.error("Error deleting a todo:", error);
-    res.status(500).json({ error: "Failed to delete a todo" });
+    console.error("Error deleting a employee:", error);
+    res.status(500).json({ error: "Failed to delete a employee" });
   }
 });
 
@@ -159,7 +164,7 @@ app.post("/signup", async (req, res) => {
     // Generate a secret for the user
     const mfaSecret = speakeasy.generateSecret({
       length: 20,
-      name: "Todo-lists",
+      name: "employee-manager",
     });
 
     const newUser = new User({
