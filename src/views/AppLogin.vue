@@ -149,7 +149,7 @@ const verify = async () => {
       localStorage.setItem("token", jwtToken.value);
 
       alert("Logged in successfully!");
-      router.push("/todo-list");
+      router.push("/emp-manager");
     } else {
       const data = await response.json();
       loginMessage.value = data.error || "Login failed";
