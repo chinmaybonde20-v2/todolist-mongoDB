@@ -97,9 +97,7 @@
 import { ref } from "vue";
 import { useRouter } from "vue-router";
 import * as formValidations from "@/helpers/validation";
-import { useStore } from "vuex";
 
-const store = useStore();
 const router = useRouter();
 
 const name = ref("");
@@ -115,28 +113,16 @@ const countryError = ref("");
 const showOTPForm = ref(false);
 const mfaOTP = ref("");
 const qrCode = ref("");
-const token = ref("");
-const tokenQR = ref("");
 
 const signup = async () => {
   event.preventDefault();
-  validateName();
-  validateEmail();
-  validatePassword();
-  validateConfirmPassword();
-  validateCountry();
+  validation();
 
-  if (
-    nameError.value ||
-    emailError.value ||
-    passwordError.value ||
-    confirmPasswordError.value
-  ) {
+  if (hasValidationErrors()) {
     return;
   }
 
   try {
-    showOTPForm.value = true;
     const response = await fetch("http://localhost:3000/signup", {
       method: "POST",
       headers: {
@@ -153,7 +139,6 @@ const signup = async () => {
     if (response.ok) {
       const data = await response.json();
       qrCode.value = data.qrCodeUrl;
-      token.value = data.token;
       showOTPForm.value = true;
     } else {
       console.error("Error signing up:", response.statusText);
@@ -162,6 +147,7 @@ const signup = async () => {
     console.error("Error signing up:", error);
   }
 };
+
 const verify = async () => {
   try {
     const response = await fetch("http://localhost:3000/mfa-verify", {
@@ -177,11 +163,6 @@ const verify = async () => {
 
     if (response.ok) {
       alert("Successfully verified");
-      const data = await response.json();
-      tokenQR.value = data.token;
-      store.commit("setLoggedIn", true);
-      store.commit("setToken", data.token);
-      localStorage.setItem("token", tokenQR.value);
       router.push("/login");
     } else {
       console.error("Error verifying:", response.statusText);
@@ -215,6 +196,24 @@ const validateConfirmPassword = () => {
 
 const validateCountry = () => {
   countryError.value = country.value === "" ? "Please select a country" : "";
+};
+
+const validation = () => {
+  validateName();
+  validateEmail();
+  validatePassword();
+  validateConfirmPassword();
+  validateCountry();
+};
+
+const hasValidationErrors = () => {
+  return (
+    nameError.value ||
+    emailError.value ||
+    passwordError.value ||
+    confirmPasswordError.value ||
+    countryError.value
+  );
 };
 </script>
 

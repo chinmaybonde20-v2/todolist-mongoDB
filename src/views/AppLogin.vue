@@ -91,17 +91,21 @@ const validatePassword = () => {
     ? ""
     : "Password must be between 8 and 15 characters";
 };
+const validation = () => {
+  validateEmail();
+  validatePassword();
+};
+
+const hasValidationErrors = () => {
+  return emailError.value || passwordError.value;
+};
 
 const login = async () => {
   event.preventDefault();
-
-  validateEmail();
-  validatePassword();
-
-  if (emailError.value || passwordError.value) {
+  validation();
+  if (hasValidationErrors()) {
     return;
   }
-
   try {
     const response = await fetch("http://localhost:3000/login", {
       method: "POST",
@@ -113,11 +117,8 @@ const login = async () => {
 
     if (response.ok) {
       const data = await response.json();
-      // jwtToken.value = data.jwtFToken;
       loginQRCode.value = data.qrCodeUrl;
       showOTP.value = true;
-      // store.commit("setToken", jwtToken.value);
-      // localStorage.setItem("token", jwtToken.value);
     } else {
       const data = await response.json();
       loginMessage.value = data.error || "Login failed";
