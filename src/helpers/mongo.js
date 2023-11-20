@@ -6,6 +6,7 @@ const crypto = require("crypto");
 const bcrypt = require("bcryptjs");
 const speakeasy = require("speakeasy");
 const QRCode = require("qrcode");
+const nodemailer = require("nodemailer");
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -39,6 +40,8 @@ const User = mongoose.model(
     password: String,
     country: String,
     mfaSecret: String,
+    resetPasswordToken: String,
+    resetPasswordExpires: Date,
   })
 );
 
@@ -141,11 +144,6 @@ app.post("/login", async (req, res) => {
     const matchPassword = await bcrypt.compare(password, user.password);
 
     if (matchPassword) {
-      // Generate and send a JWT token if login is successful
-      // const jwtFToken = jwt.sign({ email: user.email }, jwtSecretKey, {
-      //   expiresIn: "20m",
-      // });
-      // console.log("token", jwtFToken);
       res.json({ message: "Login successful", qrCodeUrl: user.qrCodeUrl });
     } else {
       res.status(401).json({ error: "Invalid credentials" });
@@ -164,7 +162,7 @@ app.post("/signup", async (req, res) => {
     // Generate a secret for the user
     const mfaSecret = speakeasy.generateSecret({
       length: 20,
-      name: "employee-manager",
+      name: userData.name + "'s QR",
     });
 
     const newUser = new User({
@@ -222,6 +220,90 @@ app.post("/mfa-verify", async (req, res) => {
   } catch (errorundefined) {
     console.error("Error during verification:", errorundefined);
     res.status(500).json({ error: "Verification failed" });
+  }
+});
+
+// Forget password
+app.post("/forgot-password", async (req, res) => {
+  try {
+    const { email } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user) {
+      return res.status(404).json({ error: "User not found" });
+    }
+    // generate otp
+    const resetToken = Math.floor(100000 + Math.random() * 900000).toString();
+    user.resetPasswordToken = resetToken;
+    user.resetPasswordExpires = Date.now() + 5 * 60 * 1000; // 5 min expiry
+
+    await user.save();
+
+    // send mail
+    const transporter = nodemailer.createTransport({
+      service: "gmail",
+      auth: {
+        user: "chinmaybondev2@gmail.com",
+        pass: "wzjx cfxu gavr wydm",
+      },
+    });
+
+    const mailOptions = {
+      from: "chinmaybondev2@gmail.com",
+      to: email,
+      subject: "Password Reset",
+      text: `Hi, Your OTP for password reset is: ${resetToken}`,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("Error sending email:", error);
+        return res.status(500).json({
+          error: "Failed to send reset token",
+          errorMessage: error.message,
+        });
+      }
+      console.log("Email sent:", info.response);
+      res.json({ message: "Reset token sent to your email" });
+    });
+  } catch (error) {
+    console.error("Error during forgot password:", error);
+    res.status(500).json({ error: "Forgot password failed" });
+  }
+});
+
+// Reset password
+app.post("/reset-password", async (req, res) => {
+  try {
+    const { otp, password, confirmPassword } = req.body;
+
+    if (!otp || !password || !confirmPassword) {
+      return res
+        .status(400)
+        .json({ error: "Please provide OTP and new password" });
+    }
+
+    if (password !== confirmPassword) {
+      return res.status(400).json({ error: "Passwords do not match" });
+    }
+
+    const user = await User.findOne({ resetPasswordToken: otp });
+
+    if (!user || user.resetPasswordExpires < Date.now()) {
+      return res.status(404).json({ error: "Invalid or expired OTP" });
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+    user.password = hashedPassword;
+    user.resetPasswordToken = undefined;
+    user.resetPasswordExpires = undefined;
+
+    await user.save();
+
+    res.json({ message: "Password reset successfully" });
+  } catch (error) {
+    console.error("Error resetting password:", error);
+    res.status(500).json({ error: "Failed to reset password" });
   }
 });
 

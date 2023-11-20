@@ -5,7 +5,7 @@ export function validateEmail(email) {
 
 export function validatePassword(password) {
   const passwordLength = password.length;
-  return passwordLength >= 8 && passwordLength <= 15;
+  return passwordLength >= 8 && passwordLength <= 20;
 }
 
 export function validateName(name) {
@@ -24,4 +24,13 @@ export function validateTaskName(value) {
 
 export function validateTaskDescription(value) {
   return value.length <= 100;
+}
+
+export function validateOTP(otp) {
+  const otpPattern = /^\d{6}$/;
+  return otpPattern.test(otp);
+}
+
+export function validateConfirmPassword(password, confirmPassword) {
+  return password === confirmPassword;
 }

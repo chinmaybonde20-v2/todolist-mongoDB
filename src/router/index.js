@@ -6,6 +6,8 @@ import EmployeeManager from "../views/EmployeeManager.vue";
 import AppLogin from "../views/AppLogin.vue";
 import AppSignup from "../views/AppSignup.vue";
 import ForgotPassword from "../views/ForgotPassword.vue";
+import ResetPassword from "@/views/ResetPassword.vue";
+
 import { useStore } from "vuex";
 
 const routes = [
@@ -20,6 +22,7 @@ const routes = [
   { path: "/login", component: AppLogin },
   { path: "/signup", component: AppSignup },
   { path: "/forgot-pass", component: ForgotPassword },
+  { path: "/reset-pass", component: ResetPassword },
 ];
 
 const router = createRouter({
